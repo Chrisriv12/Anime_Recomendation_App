@@ -1,4 +1,9 @@
-
+/*
+ * Genre.java
+ * Represents an anime genre and its associated anime list.
+ * Name: Chrisnel Rivera
+ * Date: 10/30/2025
+ */
 
 
 

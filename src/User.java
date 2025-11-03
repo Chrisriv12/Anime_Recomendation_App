@@ -1,4 +1,9 @@
-
+/*
+ * User.java
+ * Represents a user in the anime recommendation application.
+ * Name: Chrisnel Rivera
+ * Date: 10/30/2025
+ */
 
 
 

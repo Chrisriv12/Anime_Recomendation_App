@@ -1,67 +1,90 @@
-
+/**
+ * The Anime class represents an anime entity containing key information
+ * such as its ID, title, synopsis, score, and URL.
+ * 
+ * This class serves as a data model for anime objects retrieved from
+ * an external API (such as the Jikan API) or stored in a local database.
+ * 
+ * It includes a parameterized constructor for initializing all attributes,
+ * a default constructor for flexibility, getter and setter methods for
+ * encapsulated access, and a toString() method for easy display and debugging.
+ * 
+ * Author: Chrisnel Rivera
+ * Date: 10/30/2025
+ */
 
 
 
 
 public class Anime {
+    private int id;
     private String title;
-    private String genre;
-    private int releaseYear;
-    private boolean watched;
     private String synopsis;
-    private int episodes;
-    private int rating; 
+    private double score;
+    private String url;
 
-    public Anime(String title, String genre, int releaseYear, boolean watched, String synopsis, int episodes, int rating) {
+    // ✅ Constructor matching your DAO
+    public Anime(int id, String title, String synopsis, double score, String url) {
+        this.id = id;
         this.title = title;
-        this.genre = genre;
-        this.releaseYear = releaseYear;
-        this.watched = watched;
         this.synopsis = synopsis;
-        this.episodes = episodes;
-        this.rating = rating;
+        this.score = score;
+        this.url = url;
+    }
+
+    // ✅ Default constructor (optional but good practice)
+    public Anime() {}
+
+    // ✅ Getters
+    public int getId() {
+        return id;
     }
 
     public String getTitle() {
         return title;
-    }
-    
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public int getReleaseYear() {
-        return releaseYear;
-    }
-
-    public boolean Watched() {
-        return watched;
     }
 
     public String getSynopsis() {
         return synopsis;
     }
 
-    public int getEpisodes() {
-        return episodes;
+    public double getScore() {
+        return score;
     }
 
-    public int getRating() {
-        return rating;
+    public String getUrl() {
+        return url;
     }
 
+    // ✅ Setters
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    // ✅ toString for easy debugging
     @Override
     public String toString() {
         return "Anime{" +
-                "title='" + title + '\'' +
-                ", genre='" + genre + '\'' +
-                ", releaseYear=" + releaseYear +
-                ", watched=" + watched +
-                ", synopsis='" + synopsis + '\'' +
-                ", episodes=" + episodes +
-                ", rating=" + rating +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", score=" + score +
+                ", url='" + url + '\'' +
                 '}';
-
-}
+    }
 }

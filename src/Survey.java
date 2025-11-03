@@ -1,4 +1,9 @@
-
+/*
+ * Survey.java
+ * Represents a user survey for anime preferences.  
+ * Name: Chrisnel Rivera
+ * Date: 10/30/2025
+ */
 
 
 
