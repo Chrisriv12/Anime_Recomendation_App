@@ -7,120 +7,108 @@
 
 
 
-
-
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class MaliApiHandler {
     private static final String BASE_URL = "https://api.jikan.moe/v4/";
 
+    // Map of common genre names to their Jikan IDs
+    private static final Map<String, Integer> GENRE_MAP = Map.ofEntries(
+        Map.entry("action", 1),
+        Map.entry("adventure", 2),
+        Map.entry("comedy", 4),
+        Map.entry("drama", 8),
+        Map.entry("fantasy", 10),
+        Map.entry("horror", 14),
+        Map.entry("mystery", 7),
+        Map.entry("romance", 22),
+        Map.entry("sci-fi", 24),
+        Map.entry("slice of life", 36)
+    );
+
     // Fetch anime by title
     public Anime fetchAnimeByTitle(String title) {
         try {
             String encodedTitle = URLEncoder.encode(title, "UTF-8");
-            String apiUrl = BASE_URL + "anime?q=" + encodedTitle + "&limit=1"; // limit to first result
-            String jsonResponse = makeHttpRequest(apiUrl);
+            URL url = new URL(BASE_URL + "anime?q=" + encodedTitle + "&limit=1");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
 
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            JSONArray dataArray = jsonObject.getJSONArray("data");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
 
-            if (dataArray.length() > 0) {
-                JSONObject animeObj = dataArray.getJSONObject(0);
-
-                // Create and return Anime object
-                Anime anime = new Anime(
-                        animeObj.getInt("mal_id"),
-                        animeObj.getString("title"),
-                        animeObj.getString("synopsis"),
-                        animeObj.getDouble("score"),
-                        animeObj.getString("url")
+            JSONObject json = new JSONObject(response.toString());
+            JSONArray data = json.getJSONArray("data");
+            if (data.length() > 0) {
+                JSONObject animeObj = data.getJSONObject(0);
+                return new Anime(
+                    animeObj.getInt("mal_id"),
+                    animeObj.getString("title"),
+                    animeObj.optString("synopsis", "No synopsis available"),
+                    animeObj.optDouble("score", 0.0),
+                    animeObj.optString("url", "No URL available")
                 );
-                return anime;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error fetching anime by title: " + e.getMessage());
         }
         return null;
     }
 
-    // Fetch anime by genre name
-    public List<Anime> fetchAnimeByGenre(String genreName) {
+    // Fetch anime by genre name (using ID lookup)
+    public List<Anime> fetchAnimeByGenre(String genre) {
         List<Anime> animeList = new ArrayList<>();
         try {
-            // Convert genre name to ID (simplified example)
-            int genreId = getGenreId(genreName);
-            if (genreId == -1) {
-                System.out.println("Genre not recognized: " + genreName);
+            Integer genreId = GENRE_MAP.get(genre.toLowerCase());
+            if (genreId == null) {
+                System.out.println("Genre not recognized: " + genre);
                 return animeList;
             }
 
-            String apiUrl = BASE_URL + "anime?genres=" + genreId + "&limit=5";
-            String jsonResponse = makeHttpRequest(apiUrl);
+            URL url = new URL(BASE_URL + "anime?genres=" + genreId + "&limit=5");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
 
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            JSONArray dataArray = jsonObject.getJSONArray("data");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
 
-            for (int i = 0; i < dataArray.length(); i++) {
-                JSONObject animeObj = dataArray.getJSONObject(i);
-                Anime anime = new Anime(
-                        animeObj.getInt("mal_id"),
-                        animeObj.getString("title"),
-                        animeObj.optString("synopsis", "No synopsis available."),
-                        animeObj.optDouble("score", 0.0),
-                        animeObj.getString("url")
-                );
-                animeList.add(anime);
+            JSONObject json = new JSONObject(response.toString());
+            JSONArray data = json.getJSONArray("data");
+
+            for (int i = 0; i < data.length(); i++) {
+                JSONObject animeObj = data.getJSONObject(i);
+                animeList.add(new Anime(
+                    animeObj.getInt("mal_id"),
+                    animeObj.getString("title"),
+                    animeObj.optString("synopsis", "No synopsis available"),
+                    animeObj.optDouble("score", 0.0),
+                    animeObj.optString("url", "No URL available")
+                ));
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error fetching anime by genre: " + e.getMessage());
         }
         return animeList;
     }
-
-    // Helper: Make HTTP GET request and return response as String
-    private String makeHttpRequest(String apiUrl) throws IOException {
-        StringBuilder response = new StringBuilder();
-        URL url = new URL(apiUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Accept", "application/json");
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
-        conn.disconnect();
-
-        return response.toString();
-    }
-
-    // Map common genre names to IDs (Jikan IDs)
-    private int getGenreId(String genreName) {
-        genreName = genreName.toLowerCase();
-        switch (genreName) {
-            case "action": return 1;
-            case "adventure": return 2;
-            case "comedy": return 4;
-            case "drama": return 8;
-            case "fantasy": return 10;
-            case "horror": return 14;
-            case "sci-fi": return 24;
-            case "romance": return 22;
-            default: return -1;
-        }
-    }
 }
+
+
+
